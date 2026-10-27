@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04050b">
+<title>Astra — WhatsApp AI Assistant</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<header class="top">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <div>
+      <h1><span>Astra</span> AI Assistant</h1>
+      <p class="sub">WhatsApp control centre</p>
+    </div>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+<nav class="nav" id="nav" aria-label="Dashboard tabs">
+  <a href="#tab-whatsapp" data-tab="whatsapp" class="on">📱 WhatsApp</a>
+  <a href="#tab-ai" data-tab="ai">🤖 AI &amp; API</a>
+  <a href="#tab-automation" data-tab="automation">⚙️ Automation</a>
+  <a href="#tab-contacts" data-tab="contacts">👥 Contacts</a>
+  <a href="#tab-activity" data-tab="activity">📋 Activity</a>
+</nav>
+<div class="banner hidden" id="banner" role="alert"></div>
+
+<main>
+<div class="tab-panel" id="tab-whatsapp">
+<section class="card" id="connection">
+  <h2><span class="idx">01</span>WhatsApp connection</h2>
+  <p class="state-line"><span class="dot" id="waDot"></span> <strong id="waState">Checking...</strong></p>
+  <p class="muted" id="waHelp"></p>
+  <div id="pairBox">
+    <label for="phone">Your WhatsApp number with country code</label>
+    <input id="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="233241234567">
+    <p class="muted">Ghana numbers use country code <strong>233</strong> and drop the leading 0. Example: 0241234567 becomes 233241234567. Do not type + or spaces.</p>
+    <button id="pairBtn" class="primary" type="button">Get pairing code</button>
+    <p class="error hidden" id="pairError"></p>
+  </div>
+  <div id="codeBox" class="hidden">
+    <p class="muted">Your pairing code:</p>
+    <div class="code" id="pairCode" aria-live="polite"></div>
+    <button id="copyBtn" type="button">Copy code</button>
+    <ol class="steps">
+      <li>Open WhatsApp on this phone.</li>
+      <li>Tap the three dots (or Settings) and choose <strong>Linked devices</strong>.</li>
+      <li>Tap <strong>Link a device</strong>, then <strong>Link with phone number instead</strong>.</li>
+      <li>Type the code above. Only the newest code works: asking for a new code cancels the old one. It expires quickly, so enter it right away.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="card" id="commandsCard">
+  <h2><span class="idx">02</span>WhatsApp # commands</h2>
+  <p class="muted">Open your own chat in WhatsApp (<strong>Message yourself</strong>) and type <strong>#menu</strong>. Only you can use these. Leaving? Send <strong>#start</strong>. Back? Send <strong>#stop</strong>.</p>
+  <div id="commandList"><p class="muted">Loading...</p></div>
+</section>
+
+<section class="card" id="accountsCard">
+  <h2><span class="idx">03</span>WhatsApp accounts</h2>
+  <p class="muted">Run several WhatsApp numbers on this phone. Every account is completely separate: its own AI keys, owner number, contacts, settings and WhatsApp pairing. Each one has its own dashboard link.</p>
+  <div id="accountList"><p class="muted">Loading...</p></div>
+  <h3>Add another number</h3>
+  <label for="accName">Account name (letters, numbers, - or _; e.g. work, shop)</label>
+  <input id="accName" type="text" maxlength="24" autocomplete="off" autocapitalize="none" placeholder="work">
+  <div class="row"><button id="accAdd" class="primary" type="button">Create and start account</button></div>
+  <p class="muted" id="accMsg"></p>
+</section>
+
+</div>
+<div class="tab-panel hidden" id="tab-ai">
+<section class="card" id="ai">
+  <h2><span class="idx">04</span>AI configuration</h2>
+  <p class="state-line"><span class="dot" id="keyDot"></span> <strong id="keyState">Gemini key: checking...</strong></p>
+  <label for="apiKey">Gemini API key</label>
+  <input id="apiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste key from Google AI Studio">
+  <div class="row">
+    <button id="saveKey" class="primary" type="button">Save key</button>
+    <button id="testKey" type="button">Test Gemini</button>
+    <button id="clearKey" class="danger" type="button">Remove key</button>
+  </div>
+  <p class="muted" id="keyMsg"></p>
+  <hr>
+  <h3>Provider list & automatic fallback</h3>
+  <p class="muted">Add Gemini or an OpenAI-compatible API. Providers are tried in priority order. Keys are never sent back to the dashboard. OpenAI-compatible services must expose the standard /chat/completions endpoint.</p>
+  <label for="providerName">Display name</label><input id="providerName" maxlength="60" placeholder="e.g. Gemini primary">
+  <label for="providerType">Provider type</label><select id="providerType"><option value="gemini">Google Gemini</option><option value="openai_compatible">OpenAI-compatible API</option></select>
+  <label for="providerKey">API key (leave blank when editing to keep existing key)</label><input id="providerKey" type="password" autocomplete="off" placeholder="Paste provider key">
+  <label for="providerModel">Model name (Gemini can use auto)</label><input id="providerModel" placeholder="auto or model name">
+  <label for="providerBase">Base URL (OpenAI-compatible only)</label><input id="providerBase" type="url" placeholder="https://api.example.com/v1">
+  <input id="providerId" type="hidden">
+  <div class="row"><button class="primary" id="saveProvider" type="button">Add / save provider</button><button id="cancelProviderEdit" type="button">Clear form</button></div>
+  <p id="providerMsg" class="muted"></p><div id="providerList" class="list"></div>
+
+  <details open>
+    <summary>Owner & security</summary>
+    <p class="muted">Commands such as #menu and #stop are accepted only from this number. Leave blank to auto-detect the linked WhatsApp account when available.</p>
+    <label for="ownerPhone">Owner WhatsApp number (international format)</label>
+    <input id="ownerPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="233241234567">
+  </details>
+  <div class="switch-row">
+    <label class="switch"><input type="checkbox" id="botEnabled"><span>Bot enabled (master switch)</span></label>
+  </div>
+  <div class="switch-row">
+    <label class="switch"><input type="checkbox" id="manualApproval"><span>Manual approval (recommended)</span></label>
+  </div>
+  <p class="warn hidden" id="autoWarn">Automatic replies are ON. The AI sends replies to your contacts without asking you first.</p>
+
+  <details>
+    <summary>Advanced settings</summary>
+    <label for="model">Gemini model (choose a model available to your API key)</label>
+    <div class="row"><select id="model"><option value="auto">Auto (choose a usable Flash model)</option></select><button id="refreshModels" type="button">Load models</button></div>
+    <p class="muted" id="modelsMsg">Save your API key first, then load models.</p>
+    <label for="tone">Reply style</label>
+    <select id="tone">
+      <option value="">Playful (default)</option>
+      <option value="friendly">Friendly</option>
+      <option value="formal">Formal</option>
+      <option value="brief">Brief</option>
+      <option value="detailed">Detailed</option>
+    </select>
+    <label for="quietHours">Quiet hours (no AI replies, 24-hour times, e.g. 22:00-07:00; blank = off)</label>
+    <input id="quietHours" type="text" autocomplete="off" spellcheck="false" placeholder="22:00-07:00">
+    <div class="switch-row">
+      <label class="switch"><input type="checkbox" id="voiceNotes"><span>Understand voice notes (transcribe, translate, reply)</span></label>
+    </div>
+    <label for="ctx">Recent messages sent to Gemini (1-50)</label>
+    <input id="ctx" type="number" min="1" max="50">
+    <label for="maxAge">Ignore messages older than (minutes)</label>
+    <input id="maxAge" type="number" min="1" max="1440">
+    <label for="autoCap">Automatic replies per contact per hour (1-60)</label>
+    <input id="autoCap" type="number" min="1" max="60">
+    <label for="prompt">AI instructions</label>
+    <textarea id="prompt" rows="6"></textarea>
+  </details>
+  <button id="saveSettings" class="primary" type="button">Save settings</button>
+  <p class="muted" id="settingsMsg"></p>
+</section>
+
+<section class="card" id="pending">
+  <h2><span class="idx">05</span>Pending replies <span class="muted" id="pendingBadge">0</span></h2>
+  <div id="pendingList"></div>
+</section>
+
+</div>
+<div class="tab-panel hidden" id="tab-automation">
+<section class="card" id="away">
+  <h2><span class="idx">06</span>Away mode</h2>
+  <p class="state-line"><span class="dot" id="awayDot"></span> <strong id="awayState">Checking...</strong></p>
+  <p class="muted">Away mode turns on automatic replies and tells people you are away. Turning it off restores your previous settings and shows a summary. The same thing works from WhatsApp: <strong>#away</strong> and <strong>#back</strong>.</p>
+  <label for="awayNote">Why are you away? (optional)</label>
+  <input id="awayNote" maxlength="200" placeholder="e.g. at the gym, back later">
+  <label for="awayMinutes">Come back automatically after (minutes, optional)</label>
+  <input id="awayMinutes" type="number" inputmode="numeric" min="1" max="10080" placeholder="e.g. 120">
+  <div class="row"><button id="awayOn" class="primary" type="button">Start away mode</button><button id="awayOff" type="button">I'm back</button></div>
+  <p class="muted" id="awayMsg"></p>
+</section>
+
+<section class="card" id="schedule">
+  <h2><span class="idx">07</span>Schedule <span class="muted" id="scheduleBadge">0</span></h2>
+  <div class="seg" role="group" aria-label="What to schedule">
+    <button type="button" class="seg-btn on" id="kindMessage">Message</button>
+    <button type="button" class="seg-btn" id="kindStatus">Status</button>
+  </div>
+
+  <div id="msgFields">
+    <label for="recipient">Send to</label>
+    <select id="recipient"></select>
+    <div id="phoneBox" class="hidden">
+      <label for="schedPhone">Number with country code</label>
+      <input id="schedPhone" type="tel" inputmode="numeric" autocomplete="off" placeholder="233241234567">
+    </div>
+  </div>
+
+  <div id="statusFields" class="hidden">
+    <label id="colorLabel">Background colour</label>
+    <div class="swatches" id="swatches" role="radiogroup" aria-labelledby="colorLabel"></div>
+    <label for="audience">Who can see it</label>
+    <select id="audience">
+      <option value="known">People who have messaged this assistant</option>
+      <option value="me">Only me (good for a test)</option>
+    </select>
+    <p class="muted">WhatsApp needs an exact audience list. This app only knows the people who have messaged it, so choose &quot;Only me&quot; first to test.</p>
+    <div class="phone-preview sw-0" id="statusPreview" aria-hidden="true"><span id="previewText">Your status</span></div>
+  </div>
+
+  <label for="schedText" id="schedTextLabel">Message</label>
+  <textarea id="schedText" rows="4"></textarea>
+  <p class="muted counter"><span id="charCount">0</span> / <span id="charMax">4000</span></p>
+
+  <label for="when">Send at (<span id="tzName">your time zone</span>)</label>
+  <input id="when" type="datetime-local">
+  <div class="row quick">
+    <button type="button" id="qHour">+1 hour</button>
+    <button type="button" id="qTonight">Tonight 8 pm</button>
+    <button type="button" id="qTomorrow">Tomorrow 8 am</button>
+  </div>
+
+  <div class="row">
+    <button id="scheduleBtn" class="primary" type="button">Schedule</button>
+    <button id="sendNowBtn" type="button">Send now</button>
+  </div>
+  <p class="muted" id="schedMsg"></p>
+
+  <h3>Upcoming</h3>
+  <div id="upcomingList"></div>
+</section>
+
+<section class="card" id="statuses">
+  <h2><span class="idx">08</span>Statuses</h2>
+  <p class="muted">Live statuses posted from here. They disappear from WhatsApp after 24 hours.</p>
+  <div id="liveStatusList"></div>
+  <h3>Recent activity</h3>
+  <div id="schedHistoryList"></div>
+</section>
+
+</div>
+<div class="tab-panel hidden" id="tab-contacts">
+<section class="card" id="contacts">
+  <h2><span class="idx">09</span>Contacts</h2>
+  <div id="contactList"></div>
+</section>
+
+<section class="card hidden" id="profileCard">
+  <h2><span class="idx">10</span>How to talk to <span id="profileWho">this contact</span></h2>
+  <p class="muted">Tell Astra how to speak to this one person. Astra also keeps a short private memory of each contact from their chats (turn that off with #learn off). Nothing here is shared with other contacts.</p>
+  <label for="profStyle">How to talk to them (style)</label>
+  <textarea id="profStyle" rows="3" maxlength="600" placeholder="e.g. Speak Twi, very casual, call him boss, keep replies short"></textarea>
+  <label for="profNotes">What Astra should know about them (notes)</label>
+  <textarea id="profNotes" rows="3" maxlength="900" placeholder="e.g. My cousin. Studies nursing. Don't discuss money."></textarea>
+  <label for="profMemory">What Astra learned from their chats (you can edit or clear it)</label>
+  <textarea id="profMemory" rows="4" maxlength="900" placeholder="Nothing learned yet. Astra updates this after a few messages."></textarea>
+  <div class="row"><button id="profSave" class="primary" type="button">Save</button><button id="profClearMemory" type="button">Clear learned memory</button><button id="profClose" type="button">Close</button></div>
+  <p class="muted" id="profMsg"></p>
+</section>
+
+</div>
+<div class="tab-panel hidden" id="tab-activity">
+<section class="card" id="history">
+  <h2><span class="idx">11</span>Conversation history</h2>
+  <p class="muted" id="historyTitle">Choose a contact and tap "History".</p>
+  <div id="chat" class="chat"></div>
+</section>
+
+<section class="card" id="logs">
+  <h2><span class="idx">12</span>Logs</h2>
+  <p class="muted">Recent dashboard and WhatsApp bridge logs. Secrets are masked before display.</p>
+  <div class="row"><button id="refreshLogs" type="button">Refresh logs</button><button id="copyLogs" type="button">Copy logs</button><button id="clearLogs" class="danger" type="button">Clear logs</button></div>
+  <pre id="logsOutput" class="logs-output">Tap Refresh logs to load recent activity.</pre>
+  <p class="muted" id="logsMsg"></p>
+</section>
+
+<section class="card" id="health">
+  <h2><span class="idx">13</span>System health</h2>
+  <ul class="kv" id="healthList"></ul>
+  <h3>Recent events</h3>
+  <ul class="events" id="eventList"></ul>
+</section>
+</div>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

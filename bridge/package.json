@@ -1,0 +1,14 @@
+{
+  "name": "whatsapp-ai-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local WhatsApp bridge using Baileys (7.x default, 6.x supported)",
+  "main": "bridge.js",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "pino": "^9.5.0"
+  }
+}
